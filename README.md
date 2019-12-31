@@ -1,4 +1,5 @@
 #*SparkifyDB*
+
 This repository's purpose is to perform ETL operations between the JSON log data that exists in some S3 bucket and 
 the Redshift staging / analytical tables.
 
