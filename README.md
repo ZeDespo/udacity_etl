@@ -1,4 +1,4 @@
-#*SparkifyDB*
+# *SparkifyDB*
 
 This repository's purpose is to perform ETL operations between the JSON log data that exists in some S3 bucket and 
 the Redshift staging / analytical tables.
@@ -9,7 +9,7 @@ any supplementary information, such as the song name, from any one of the four d
 indiscriminately copied from the S3 bucket to the staging tables. From there, the data is cleaned and placed into 
 logical analytic tables:
 
-##Songplay
+## Songplay
 
 Holds all factual data for queries to perform JOINS onto. Comprised of data from both the events and songs JSON logs. 
 _Contains some data not viewable in other tables (user_agent, session_id)_
@@ -25,7 +25,7 @@ user_agent varchar NOT NULL,
 location varchar NOT NULL
 ```
 
-##Songs
+## Songs
 
 Each record pertains to a song by some artist / group. Made up solely from the song logs.
 ```
@@ -36,7 +36,7 @@ year int,
 duration real
 ```
 
-##Artists
+## Artists
 
 Each record pertains to an artist or group that has recorded songs. Made up solely from the song logs.
 ```
@@ -47,7 +47,7 @@ latitude varchar,
 longitude varchar
 ```
 
-##Time
+## Time
 
 Filtered by users actively listening to some song, holds information on all times users queried Sparkify. Made up solely from the 
 event logs.
@@ -62,7 +62,7 @@ weekday varchar
 ```
 
 
-##Users
+## Users
 Filtered by users actively listening to some song, holds all user specific information. Made up solely from the 
 event logs.
 ```
