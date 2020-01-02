@@ -103,6 +103,7 @@ def _insert_df_to_time_user_songplay(cur, df: pd.DataFrame, songs_df: pd.DataFra
                         songplay fact table.
     :return: Nothing
     """
+    df = df.drop_duplicates(keep='last')
     df = _timestamps_to_datetime(df)
     t_c = ["start_time", "hour", "day", "week", "month", "year", "weekday"]
     u_c =['user_id', 'first_name', 'last_name', 'gender', 'level']

@@ -24,24 +24,24 @@ staging_songs_drop = "DROP TABLE staging_songs;"
 
 # CREATE TABLES
 
-staging_events_table_create= ("""
+staging_events_table_create = ("""
     CREATE TEMPORARY TABLE IF NOT EXISTS staging_logs (
         artist varchar,
         auth varchar,
         firstName varchar,
         gender varchar, 
-        itemInSession varchar, 
+        itemInSession int, 
         lastName varchar, 
-        length varchar, 
+        length numeric, 
         level varchar, 
         location varchar,
         method varchar,
         page varchar,
-        registration varchar, 
-        sessionId varchar,
+        registration numeric, 
+        sessionId int,
         song varchar, 
-        status varchar, 
-        ts varchar,
+        status int, 
+        ts bigint,
         userAgent varchar,
         userId varchar
     );
@@ -179,7 +179,7 @@ song_table_fast_insert = ("""
         artist_id, 
         year, 
         duration)
-    SELECT song_id, title, artist_id, year, duration FROM staging_songs
+    SELECT DISTINCT song_id, title, artist_id, year, duration FROM staging_songs
 """)
 
 artist_table_insert = ("""
