@@ -47,56 +47,33 @@ def create_staging_tables(cur: psycopg2, conn: psycopg2.connect) -> None:
     conn.commit()
 
 
-def parse_and_insert(cur: psycopg2, conn: psycopg2.connect):
+def parse_and_insert(cur: psycopg2, conn: psycopg2.connect) -> None:
     """
     Take the data in the staging tables and distribute them into their proper Redshift analytic tables.
     :param cur: PostgreSQL cursor
     :param conn: PostgreSQL connection object
     :return:
     """
-    logger.info("Fast inserting records into song table.")
+    logger.info("Fast inserting records into songs table.")
     cur.execute(song_table_fast_insert)
-    cur.execute(artists_select)
-    data = cur.fetchall()
-    columns = ["song_id", "song_name", "length", "artist_id", "artist_name", "artist_location", "artist_latitude",
-               "artist_longitude"]
-    songs_df = pd.DataFrame(data, columns=columns)
-    logger.info("Slow inserting records into artists table")
-    _insert_df_to_artist(cur, songs_df.filter(columns[3:]))
+    logger.info("Fast inserting records into artists table.")
+    cur.execute(artist_table_fast_insert)
     conn.commit()
-    to_drop = ['length', 'artist_location', 'artist_latitude', 'artist_longitude']
-    songs_df = songs_df.drop(to_drop, axis=1)  # Just need song_id, song_name, length and artist_id for fact table
-    songs_df = songs_df.drop_duplicates(keep='first')
     cur.execute(events_select)
     data = cur.fetchall()
     columns = ['user_id', 'first_name', 'last_name', 'gender', 'level', 'ts', 'artist_name', 'song_name', 'length',
                'location', 'session_id', 'user_agent']
     df = pd.DataFrame(data, columns=columns)
     logger.info("Slow inserting records into time, users, and songplay tables.")
-    _insert_df_to_time_user_songplay(cur, df, songs_df)
+    _insert_df_to_time_user_songplay(cur, df)
     conn.commit()
 
 
-def _insert_df_to_artist(cur, df: pd.DataFrame) -> None:
-    """
-    Remove duplicates from the dataframe representing the songs' staging table and insert the records into the artist
-    table.
-    :param cur: PostgreSQL cursor
-    :param df: The pandas songs dataframe that holds only the values the artist table concerns itself with.
-    :return: None
-    """
-    a = df.drop_duplicates(keep='last')
-    logger.info("Inserting {} rows".format(len(a)))
-    for index, row in a.iterrows():
-        cur.execute(artist_table_insert, row.to_list())
-        if index % 1000 == 0:
-            logger.info("{} rows inserted".format(index + 1))
-    logger.info("Finished insertion.")
-
-
-def _insert_df_to_time_user_songplay(cur, df: pd.DataFrame, songs_df: pd.DataFrame) -> None:
+def _insert_df_to_time_user_songplay(cur, df: pd.DataFrame) -> None:
     """
     Take the data from the events' staging table and format it to the time, users, and songplay fact table respectively
+    Instead of continuously reading from the database to locate the song id and artist id without use of a primary key,
+    another read from the staging table is loaded into a pandas dataframe for in-memory speeds.
     :param cur: PostgreSQL cursor
     :param df: The events dataframe that holds relevant data for the users, time and songplay tables
     :param songs_df: The dataframe representing the songs library necessary to lookup song_id and artist_id for the
@@ -105,11 +82,13 @@ def _insert_df_to_time_user_songplay(cur, df: pd.DataFrame, songs_df: pd.DataFra
     """
     df = df.drop_duplicates(keep='last')
     df = _timestamps_to_datetime(df)
+    cur.execute(artists_select)
+    songs_df = pd.DataFrame(cur.fetchall(), columns=['song_id', 'song_name', 'artist_id', 'artist_name'])
     t_c = ["start_time", "hour", "day", "week", "month", "year", "weekday"]
-    u_c =['user_id', 'first_name', 'last_name', 'gender', 'level']
+    u_c = ['user_id', 'first_name', 'last_name', 'gender', 'level']
     s_c = ['start_time', 'user_id', 'level', 'session_id', 'location', 'user_agent', 'song_id', 'artist_id']
     df['song_id'], df['artist_id'] = None, None
-    logger.info("Inserting {} rows".format(len(df)))
+    logger.debug("Inserting {} rows".format(len(df)))
     for index, row in df.iterrows():
         cur.execute(time_table_insert, row.filter(t_c).to_list())
         cur.execute(user_table_insert, row.filter(u_c).to_list())
