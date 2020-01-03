@@ -26,7 +26,7 @@ staging_songs_drop = "DROP TABLE staging_songs;"
 # CREATE TABLES
 
 staging_events_table_create = ("""
-    CREATE TABLE IF NOT EXISTS staging_logs (
+    CREATE TEMPORARY TABLE IF NOT EXISTS staging_logs (
         id INT IDENTITY(0,1) PRIMARY KEY NOT NULL,
         artist varchar,
         auth varchar,
@@ -51,7 +51,7 @@ staging_events_table_create = ("""
 
 
 staging_songs_table_create = ("""
-    CREATE TABLE IF NOT EXISTS staging_songs (
+    CREATE TEMPORARY TABLE IF NOT EXISTS staging_songs (
         id INT IDENTITY(0,1) PRIMARY KEY NOT NULL,
         num_songs int,
         artist_id varchar,
@@ -73,8 +73,8 @@ songplay_table_create = ("""
         start_time timestamp NOT NULL, 
         user_id int NOT NULL, 
         level varchar(4), 
-        song_id varchar NOT NULL,
-        artist_id varchar NOT NULL, 
+        song_id varchar,
+        artist_id varchar, 
         session_id int, 
         user_agent varchar, 
         location varchar
