@@ -1,11 +1,5 @@
 # *SparkifyDB*
 
-
-### Note about the project
-
-Udacity required this project to work exclusively with Redshift and S3. In reality, instead of copying the unstructured data into a Redshift staging table, the unstructured data would have been copied over to some other PostgreSQL database, then sme EC2 instance will perform ETL operations to load the data into Redshift.
-
-
 This repository's purpose is to perform ETL operations between the JSON log data that exists in some S3 bucket and 
 the Redshift staging / analytical tables.
 
@@ -79,3 +73,8 @@ last_name varchar,
 gender varchar(1), 
 level varchar(4) NOT NULL
 ```
+
+### Note about the project
+
+Udacity required this project to work exclusively with Redshift and S3. In reality, instead of copying the unstructured data into a Redshift staging table, the unstructured data would have been copied over to some other PostgreSQL database, then sme EC2 instance will perform ETL operations to load the data into Redshift.
+
